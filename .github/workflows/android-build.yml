@@ -1,0 +1,53 @@
+# .github/workflows/android-build.yml
+
+# 1. Nome da sua "Ação"
+name: Build LaVo Android App (Debug)
+
+# 2. Quando deve rodar?
+on:
+  push:
+    branches: [ main ] # Rode toda vez que você der push no branch 'main'
+  pull_request:
+    branches: [ main ] # Rode também em pull requests para o 'main'
+
+# 3. O que fazer?
+jobs:
+  build-android:
+    # 4. Qual máquina usar? (Uma máquina virtual Ubuntu)
+    runs-on: ubuntu-latest
+    
+    # 5. Quais são os passos?
+    steps:
+      # 5.1 - Baixa o seu código do repositório
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 5.2 - Configura o Java (Necessário para o Android/Gradle)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # Distribuição popular do Java
+          java-version: '17'     # O React Native 0.73+ recomenda Java 17
+
+      # 5.3 - Configura o Node.js (Necessário para o React Native/npm)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Use uma versão LTS (Long Term Support)
+
+      # 5.4 - Instala as dependências do projeto
+      - name: Install dependencies
+        run: npm install
+
+      # 5.5 - Roda o comando para criar o .apk de Debug
+      - name: Build Android Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
+          
+      # 5.6 - Salva o .apk criado para você poder baixar
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lavo-app-debug.apk # Nome do arquivo que você vai baixar
+          path: android/app/build/outputs/apk/debug/app-debug.apk # Onde o .apk está
